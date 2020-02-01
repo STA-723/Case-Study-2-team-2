@@ -1,0 +1,138 @@
+---
+title: "NYC AirBNB Data"
+output: 
+  beamer_presentation
+---
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+library(tidyverse)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rgeos)
+library(gridExtra)
+library(ggridges)
+lambda <- 0.24
+lambda2 <- -0.33
+data <- read_csv("AB_NYC_2019.csv")
+data <- data %>% filter(number_of_reviews > 0, availability_365 > 0,price>0)
+data <- data %>% mutate(reviews_per_month_bc = (reviews_per_month^lambda - 1)/lambda, price.bc = (price^lambda2 - 1)/lambda2,
+                        reviews_per_stay = (reviews_per_month * minimum_nights )/availability_365)
+
+
+
+```
+
+
+# EDA
+
+ - Removed all observations in which $\text{number of reviews } = 0$ or $\text{availability 365 } = 0$.
+    - Approximately equal number of postive/negative cases for Brooklyn and Manhattan
+    - Positive cases accounted for roughly 30%-35% of Queens and Bronx observations.
+    - Median price remained approximately the same amongst positive/negative cases for each borough. 
+ - Eight more observations in which $\text{price} = 0$ were removed.
+ 
+
+
+
+# Figure 0
+```{r,echo=FALSE,fig.align='left',fig.height=3,fig.width=4,warning=FALSE,message=FALSE}
+data %>% filter(price < 600) %>%
+  ggplot(aes(x=log(price),y=neighbourhood_group)) + geom_density_ridges() + ylab(" ") + xlab("Price")
+```
+
+
+# Figure 2
+
+```{r,echo=FALSE}
+world <- ne_countries(scale = "medium", returnclass = "sf")
+sites <- data %>% filter(price< 1000) %>% select(latitude,longitude,price)
+names <- c("Brooklyn", "Manhattan", "Queens", "Staten Island","Bronx")
+lat <- c(40.673611,40.779746,40.7282,40.5795,40.8448)
+lon <- c(-73.944313,-73.970658,-73.7949,-74.1502,-73.8648)
+points <- tibble(names,lat,lon)
+longitude.min <- min(sites$longitude); longitude.max <- max(sites$longitude)
+latitude.min <- min(sites$latitude); latitude.max <-  max(sites$latitude)
+```
+
+
+```{r,echo=FALSE,fig.align='center',fig.height=3.5,fig.width=5.5,warning=FALSE}
+sites <- data %>% filter(price < 600, reviews_per_stay > 0)  %>% select(latitude,longitude,price)
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = sites, aes(x = longitude, y = latitude,col=price), size = 0.0005, shape = 20,show.legend = FALSE) +
+  geom_text(aes(x=lon,y=lat,label=names),data=points) + xlim(c(longitude.min,longitude.max))  +
+  ylim(c(latitude.min, latitude.max)) + 
+  guides(col= FALSE)  +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        )
+```
+
+
+
+# Figure 1
+
+```{r,echo=FALSE,fig.align='center',fig.height=3,fig.width=5}
+sites <- data %>% filter(price < 600)  %>% select(latitude,longitude,room_type,price)
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = sites, aes(x = longitude, y = latitude,col=room_type,alpha=price), size = 0.001, shape = 20) +
+  geom_text(aes(x=lon,y=lat,label=names),data=points) + 
+  xlim(c(longitude.min,longitude.max)) + ylim(c(latitude.min, latitude.max)) +
+  guides(alpha= FALSE) +
+  scale_color_discrete(name="Room Type") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        legend.text = element_text(size=4),
+        legend.title = element_text(size=4),
+        legend.background = element_rect(size=4)
+        )
+                      
+```
+
+
+# Popularity 
+
+```{r,echo=FALSE,fig.align='left',fig.height=3,fig.width=4,warning=FALSE,message=FALSE}
+data %>% filter(reviews_per_stay < 0.5) %>%
+  ggplot(aes(x=log(reviews_per_stay),y=neighbourhood_group)) + geom_density_ridges() + ylab(" ") + xlab("Reviews Per Stay")
+```
+
+
+
+# Figure 3
+
+```{r,echo=FALSE,fig.align='center',fig.height=3.5,fig.width=5.5,warning=FALSE}
+sites <- data  %>% filter(reviews_per_stay > 0, price < 600) %>% select(latitude,longitude,reviews_per_stay,price)
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = sites, aes(x = longitude, y = latitude,col=price,alpha=reviews_per_stay), size = 0.0005, shape = 20,show.legend = FALSE) +
+  geom_text(aes(x=lon,y=lat,label=names),data=points)+ xlim(c(longitude.min,longitude.max))  +
+  ylim(c(latitude.min, latitude.max)) + 
+  guides(alpha= FALSE) +
+  scale_color_continuous(name="Room Type") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        legend.text = element_text(size=4),
+        legend.title = element_text(size=4),
+        legend.background = element_rect(size=4)
+        )
+```
+
+
+
+
+
