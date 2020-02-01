@@ -22,14 +22,12 @@ data <- data %>% mutate(reviews_per_stay = (reviews_per_month * minimum_nights )
 
 ```
 
+# Introduction/EDA
 
-# EDA
-
- - Removed all observations in which $\text{number of reviews } = 0$ or $\text{availability 365 } = 0$, which we will call "positive cases".
-    - Approximately equal number of postive/negative cases for Brooklyn and Manhattan
-    - Positive cases accounted for roughly 30%-35% of Queens and Bronx observations.
-    - Median price remained approximately the same amongst positive/negative cases for each borough. 
- - Eight more observations in which $\text{price} = 0$ were removed.
+ - New York City *Airbnb* data from 2019.
+    - Variables include listing locations (neighbourhoods and NYC boroughs), price, and reviews per month.
+    - Goal: Discover which variables contribute to price and popularity.
+ - Removed all observations in which $\text{number of reviews } = 0$, $\text{availability 365 } = 0$, or $\text{price} = 0$. . 
  - Defined a popularity metric as: $\text{reviews per stay = }\frac{(\text{reviews per month})}{(\text{minimum nights})/(\text{availability 365})}$
     - $(\text{minimum nights})/(\text{availability 365}) \approx \text{number of possible bookings}$
     - Serves as a "corrected" version of reviews per month.
