@@ -1,0 +1,96 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(rstan)
+library(lme4)
+library(R2jags)
+library(runjags)
+library(MCMCvis)
+dat = read.csv("AB_NYC_2019.csv", header = T, stringsAsFactors = F)
+dat.orig = dat
+dat <- dat %>% filter(minimum_nights<=30 & price <= 400 & number_of_reviews > 0 & availability_365 > 0)
+summary(dat)
+
+colSums(is.na(dat))
+
+words = unlist(strsplit(tolower(dat$name), split = ",|\"|\\.|:|\\(|\\)|\\s+"))
+head(sort(table(words), decreasing = T), 200)
+
+words = unlist(str_split(tolower(dat %>% filter(price > 500) %>% select(name)), ",|\"|\\.|:|\\(|\\)|\\s+"))
+head(sort(table(words), decreasing = T), 200)
+
+mod = lmer(price ~ (1 | neighbourhood_group/neighbourhood), data = dat)
+summary(mod)
+
+dat2 = dat %>% select(neighbourhood, neighbourhood_group) %>% 
+  mutate(neighbourhood = factor(neighbourhood), neighbourhood_group = factor(neighbourhood_group))
+nbhds = levels(dat2$neighbourhood)
+burs = levels(dat2$neighbourhood_group)
+numBUR = length(burs)
+numNBHD = length(nbhds)
+nbhd_bur = unique(dat2) %>% arrange(neighbourhood) %>%
+  pull(neighbourhood_group)
+
+dat_nbhd = dat2 %>% pull(neighbourhood)
+dat_bur = dat2 %>% pull(neighbourhood_group)
+mean.coord = as.matrix(dat %>% arrange(neighbourhood) %>% group_by(neighbourhood) %>% summarise(mean.lat = mean(latitude),mean.lon = mean(longitude)) %>% select(mean.lat, mean.lon))
+W = array(0,rep(numNBHD,2))
+dis = as.matrix(dist(mean.coord))
+bur.share = 1*(0==as.matrix(dist(as.numeric(nbhd_bur))))
+W[dis<.05 & dis>0 & bur.share == 1] = 1
+D = diag(apply(W,1,sum))
+
+
+
+######################
+
+X = scale(model.matrix(~ .,dat %>% select(room_type, minimum_nights, number_of_reviews, calculated_host_listings_count, availability_365))[,-1])
+X_nbhd = model.matrix(~ neighbourhood - 1, dat)
+X_bur = model.matrix(~ neighbourhood_group - 1, dat)
+y = log(dat$price + .001)
+n_nbhd = numNBHD
+n_bur = numBUR
+nbhd = as.numeric(as.factor(dat$neighbourhood))
+bur = as.numeric(as.factor(dat$neighbourhood_group))
+
+
+n.iter = 1000
+n.chains = 2
+stan_dat = list(
+  y = y,
+  n = length(y),
+  p = ncol(X),
+  X = X,
+  W = W,
+  W_n = sum(W) / 2,
+  n_nbhd = length(unique(dat$neighbourhood)),
+  n_bur = length(unique(dat$neighbourhood_group)),
+  nbhd = nbhd,
+  bur = bur,
+  X_bur = X_bur,
+  X_nbhd = X_nbhd
+)
+
+n.iter = 4000
+n.chains = 4
+
+stan_fit <- stan('mod.stan', data = stan_dat, 
+               iter = n.iter, chains = n.chains, verbose = F)
+
+print(stan_fit, pars = c('beta', 'tau', 'alpha', 'lp__'))
+library(brms)
+rownames(W) = colnames(W) = nbhds
+brm_fit = brm(price ~ room_type + number_of_reviews + calculated_host_listings_count + availability_365 + (1|neighbourhood_group) + minimum_nights, dat = dat, autocor = cor_car(W=W, formula = ~1|neighbourhood), iter = 4000, chains = 1)
+
+cb_fit <-  S.CARmultilevel(formula = price ~ room_type + neighbourhood_group, 
+                        family = "gaussian",
+                         data = dat, W = W, ind.area = nbhd,
+                         burnin = 1000, n.sample = 10000,
+                         verbose = T)
+
+```
+
