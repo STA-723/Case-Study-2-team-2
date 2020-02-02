@@ -27,10 +27,7 @@ data <- data %>% mutate(reviews_per_stay = (reviews_per_month * minimum_nights )
  - New York City *Airbnb* data from 2019.
     - Variables include listing locations (neighbourhoods and NYC boroughs), price, and reviews per month.
     - Goal: Discover which variables contribute to price and popularity.
- - Removed all observations in which $\text{number of reviews } = 0$, $\text{availability 365 } = 0$, or $\text{price} = 0$. . 
- - Defined a popularity metric as: $\text{reviews per stay = }\frac{(\text{reviews per month})}{(\text{minimum nights})/(\text{availability 365})}$
-    - $(\text{minimum nights})/(\text{availability 365}) \approx \text{number of possible bookings}$
-    - Serves as a "corrected" version of reviews per month.
+
  
 
 
@@ -131,7 +128,20 @@ ggplot(data = world) +
         )
 ```
 
+# Analysis
+
+- Drop Zero Review/Zero Days Available
+- Cap Price at 600/Cap Minimum Stay at 30
+- Removed all observations in which $\text{number of reviews } = 0$, $\text{availability 365 } = 0$, or $\text{price} = 0$. . 
+- Defined a popularity metric as: $\text{reviews per stay = }\frac{(\text{reviews per month})}{(\text{minimum nights})/(\text{availability 365})}$
+  - $(\text{minimum nights})/(\text{availability 365}) \approx \text{number of possible bookings}$
+  - Serves as a "corrected" version of reviews per month.
 
 
+# CAR Model
+
+$$
+  \phi_i|\phi_{-i},
+$$ 
 
 

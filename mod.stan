@@ -45,8 +45,6 @@ data {
   int<lower = 1> nbhd[n];
   int<lower = 1> bur[n];
   matrix<lower = 0, upper = 1>[n_nbhd, n_nbhd] W;
-  matrix<lower = 0, upper = 1>[n, n_nbhd] X_nbhd;
-  matrix<lower = 0, upper = 1>[n, n_bur] X_bur;
 }
 transformed data{
   int W_sparse[W_n, 2];   // adjacency pairs
@@ -89,13 +87,14 @@ model {
   vector[n] effect_bur;
   vector[n] effect_nbhd;
   phi ~ sparse_car(tau_nbhd, alpha, W_sparse, D_sparse, lambda, n_nbhd, W_n);
-  beta ~ normal(0, 10000);
+  beta ~ normal(0, 25);
   beta_bur ~ normal(0, 1 / pow(tau_bur,.5));
+  //beta_bur ~ normal(0,25);
   tau_nbhd ~ gamma(.1, .1);
   tau_bur ~ gamma(.1, .1);
   tau ~ gamma(.1, .1);
   for (i in 1:n) {
-   effect_bur[i] = beta_bur[bur[i]];
+    effect_bur[i] = beta_bur[bur[i]];
     effect_nbhd[i] = phi[nbhd[i]];
   }
   y ~ normal(X * beta + effect_nbhd + effect_bur, inv(square(tau)));

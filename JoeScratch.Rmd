@@ -10,21 +10,26 @@ library(lme4)
 library(R2jags)
 library(runjags)
 library(MCMCvis)
+library(brms)
+library(emdist)
+library(pdist)
 dat = read.csv("AB_NYC_2019.csv", header = T, stringsAsFactors = F)
 dat.orig = dat
-dat <- dat %>% filter(minimum_nights<=30 & price <= 400 & number_of_reviews > 0 & availability_365 > 0)
-summary(dat)
+dat <- dat %>% filter(minimum_nights<=30 & price <= 600 & number_of_reviews > 0 & availability_365 > 0 & price > 0)
+dat <- dat %>% mutate(reviews_per_stay = (reviews_per_month * minimum_nights )/availability_365)
 
-colSums(is.na(dat))
-
+###############################################
+#### Text Stuff
+###############################################
 words = unlist(strsplit(tolower(dat$name), split = ",|\"|\\.|:|\\(|\\)|\\s+"))
 head(sort(table(words), decreasing = T), 200)
 
 words = unlist(str_split(tolower(dat %>% filter(price > 500) %>% select(name)), ",|\"|\\.|:|\\(|\\)|\\s+"))
 head(sort(table(words), decreasing = T), 200)
-
-mod = lmer(price ~ (1 | neighbourhood_group/neighbourhood), data = dat)
-summary(mod)
+dat$CapCount = sapply(regmatches(dat$name, gregexpr("[A-Z]", dat$name, perl=TRUE)), length)
+dat <- dat %>% mutate(CapPerc = CapCount / nchar(name))
+dat$Exclamation = 1 * grepl("!", dat$name)
+#####################################################################################3
 
 dat2 = dat %>% select(neighbourhood, neighbourhood_group) %>% 
   mutate(neighbourhood = factor(neighbourhood), neighbourhood_group = factor(neighbourhood_group))
@@ -44,44 +49,100 @@ bur.share = 1*(0==as.matrix(dist(as.numeric(nbhd_bur))))
 W[dis<.05 & dis>0 & bur.share == 1] = 1
 D = diag(apply(W,1,sum))
 
+##########################################
+### EARTH MOVERS DISTANCE METHOD #########
+##########################################
 
+W.emd = matrix(nrow = numNBHD, ncol = numNBHD)
+
+for (i in 1:numNBHD) {
+  for (j in 1:numNBHD) {
+    if (i == j) {
+      W.emd[i,j] = 0
+    } else {
+      A = as.matrix(dat %>% filter(neighbourhood == nbhds[i]) %>% select(latitude, longitude))
+      B = as.matrix(dat %>% filter(neighbourhood == nbhds[j]) %>% select(latitude, longitude))
+      A.weight = matrix(1/nrow(A), nrow = nrow(A), ncol = 2)
+      B.weight = matrix(1/nrow(B), nrow = nrow(B), ncol = 2)
+      A = cbind(A.weight, A)
+      B = cbind(B.weight, B)
+      W.emd[i,j] = emdr(A = A, wA = A.weight, B = B, wB = B.weight, max.iter = 1000)
+    }
+  }
+}
+
+W.d = matrix(nrow = numNBHD, ncol = numNBHD)
+
+for (i in 1:numNBHD) {
+  for (j in 1:numNBHD) {
+    if (i == j) {
+      W.d[i,j] = Inf
+    } else if (i > j){
+      A = as.matrix(dat %>% filter(neighbourhood == nbhds[i]) %>% select(latitude, longitude))
+      B = as.matrix(dat %>% filter(neighbourhood == nbhds[j]) %>% select(latitude, longitude))
+      d = mean(as.matrix(pdist(X = A, Y = B)))
+      W.d[i,j] = W.d[j,i] = d
+    }
+  }
+  cat("DONE WITH: ",i,",",j,"\r")
+}
+
+W.a = matrix(0, numNBHD, numNBHD)
+W.a[W.d < .05 & bur.share == 1] = 1
+apply(W.a,1,sum) - apply(W,1,sum)
 
 ######################
 
-X = scale(model.matrix(~ .,dat %>% select(room_type, minimum_nights, number_of_reviews, calculated_host_listings_count, availability_365))[,-1])
+X = scale(model.matrix(~ .,dat %>% select(room_type, minimum_nights, number_of_reviews, calculated_host_listings_count, availability_365, Exclamation, ))[,-1])
 X_nbhd = model.matrix(~ neighbourhood - 1, dat)
 X_bur = model.matrix(~ neighbourhood_group - 1, dat)
-y = log(dat$price + .001)
+y.pr = log(dat$price)
+y.pop = log(dat$reviews_per_stay)
 n_nbhd = numNBHD
 n_bur = numBUR
 nbhd = as.numeric(as.factor(dat$neighbourhood))
 bur = as.numeric(as.factor(dat$neighbourhood_group))
 
 
-n.iter = 1000
-n.chains = 2
-stan_dat = list(
-  y = y,
-  n = length(y),
+
+stan_dat_price = list(
+  y = y.pr,
+  n = length(y.pr),
   p = ncol(X),
   X = X,
-  W = W,
-  W_n = sum(W) / 2,
+  W = W.a,
+  W_n = sum(W.a) / 2,
   n_nbhd = length(unique(dat$neighbourhood)),
   n_bur = length(unique(dat$neighbourhood_group)),
   nbhd = nbhd,
-  bur = bur,
-  X_bur = X_bur,
-  X_nbhd = X_nbhd
+  bur = bur
+)
+stan_dat_pop = list(
+  y = y.pop,
+  n = length(y.pop),
+  p = ncol(X),
+  X = X,
+  W = W.a,
+  W_n = sum(W.a) / 2,
+  n_nbhd = length(unique(dat$neighbourhood)),
+  n_bur = length(unique(dat$neighbourhood_group)),
+  nbhd = nbhd,
+  bur = bur
 )
 
-n.iter = 4000
-n.chains = 4
+n.iter = 5000
+n.chains = 1
 
-stan_fit <- stan('mod.stan', data = stan_dat, 
-               iter = n.iter, chains = n.chains, verbose = F)
+stan_fit_price <- stan('mod.stan', data = stan_dat_price, 
+               iter = n.iter, chains = n.chains, verbose = F,
+               control = list(max_treedepth=15))
 
-print(stan_fit, pars = c('beta', 'tau', 'alpha', 'lp__'))
+
+stan_fit_prop <- stan('mod.stan', data = stan_dat_pop, 
+               iter = n.iter, chains = n.chains, verbose = F,
+               control = list(max_treedepth=15))
+
+print(stan_fit, pars = c('beta', 'tau', 'alpha', 'tau_nbhd', 'beta_bur'))
 library(brms)
 rownames(W) = colnames(W) = nbhds
 brm_fit = brm(price ~ room_type + number_of_reviews + calculated_host_listings_count + availability_365 + (1|neighbourhood_group) + minimum_nights, dat = dat, autocor = cor_car(W=W, formula = ~1|neighbourhood), iter = 4000, chains = 1)
@@ -91,6 +152,14 @@ cb_fit <-  S.CARmultilevel(formula = price ~ room_type + neighbourhood_group,
                          data = dat, W = W, ind.area = nbhd,
                          burnin = 1000, n.sample = 10000,
                          verbose = T)
+
+library(bayesplot)
+nbhd_fit = as.data.frame(stan_fit, pars = "phi")
+colnames(nbhd_fit) = nbhds
+nbhd_fit = nbhd_fit[,order(colMeans(nbhd_fit))]
+
+mcmc_intervals(as.matrix(stan_fit, pars = "phi"))
+print(stan_fit, pars = "phi")
 
 ```
 
