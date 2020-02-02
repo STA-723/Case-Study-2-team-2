@@ -140,8 +140,25 @@ ggplot(data = world) +
 
 # CAR Model
 
+Specify CAR structure for $\phi$:
 $$
-  \phi_i|\phi_{-i},
-$$ 
+  \phi_i|\phi_{-i},\tau_i^2\sim N\bigg(\rho\sum b_{ij}\phi_j,\tau_i^2\bigg)
+$$
+- Set $b_{ij} = w_{ij} / w_{i+}$ ($w_{i+}$ is $i's$ neighbor count)
+
+- Set $\tau_i^2 = \frac{\sigma^2}{w_{i+}}$
+
+Then we have joint distribution:
+
+$$
+\phi|W,\sigma^2\sim N\big(0,\sigma^2(D-\rho W)^{-1}\big)
+$$
+- W is adjacency matrix of neighborhoods
+
+- D is diagonal with $d_{ii}$ the count of $i's$ neighbors
+
+- $\rho\in(0,1)$ calibrates strength of relationship/controls pairwise covariance
+
+(See (Gelfand, Vounatsou 2003.) for further details)
 
 
