@@ -17,9 +17,6 @@ library(ggridges)
 data <- read_csv("AB_NYC_2019.csv")
 data <- data %>% filter(number_of_reviews > 0, availability_365 > 0,price>0)
 data <- data %>% mutate(reviews_per_stay = (reviews_per_month * minimum_nights )/availability_365)
-
-
-
 ```
 
 # Introduction/EDA
@@ -27,6 +24,7 @@ data <- data %>% mutate(reviews_per_stay = (reviews_per_month * minimum_nights )
  - New York City *Airbnb* data from 2019.
     - Variables include listing locations (neighbourhoods and NYC boroughs), price, and reviews per month.
     - Goal: Discover which variables contribute to price and popularity.
+    - Presentation order: EDA/Text Analysis/Model.
 
  
 
@@ -144,4 +142,48 @@ $$
   \phi_i|\phi_{-i},
 $$ 
 
+
+
+
+
+
+# Results Price Model
+
+|Coefficient|Posterior Mean|Lower Bound|Upper Bound|
+|-----------|--------------|-----------|-----------|
+|alpha      | some number  | lb |  ub |
+|Manhattan  | some number  | lb |  ub | 
+|Queens     | some number  | lb |  ub | 
+|Bronx      | some number  | lb |  ub | 
+|Staten Island  | some number  | lb |  ub | 
+|Brooklyn | some number  | lb |  ub | 
+|Apt | some number  | lb |  ub  | 
+|Full | some number  | lb |  ub |
+|Proper Noun| some number  | lb |  ub |
+|Some other text | some number  | lb |  ub |
+|another text feature | some number  | lb |  ub |
+|one more text feature | some number | lb | ub |
+
+
+# Results Popularity Model
+
+|Coefficient|Posterior Mean|Lower Bound|Upper Bound|
+|-----------|--------------|-----------|-----------|
+|alpha      | some number  | lb |  ub |
+|Manhattan  | some number  | lb |  ub | 
+|Queens     | some number  | lb |  ub | 
+|Bronx      | some number  | lb |  ub | 
+|Staten Island  | some number  | lb |  ub | 
+|Brooklyn | some number  | lb |  ub | 
+|Apt | some number  | lb |  ub  | 
+|Full | some number  | lb |  ub |
+|Proper Noun| some number  | lb |  ub |
+|Some other text | some number  | lb |  ub |
+|another text feature | some number  | lb |  ub |
+|one more text feature | some number | lb | ub |
+
+
+# Conclusion
+
+fsgd
 
