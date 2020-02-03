@@ -145,18 +145,18 @@ ggplot() +
 # Text Analysis
 
 - Analyzed various text features for listing names
-- Length (in characters), # of words, % capitalization
-- # of punctuation, # of exclamations
+- Length (in characters), \# of words, % capitalization
+- \# of punctuation, \# of exclamations
 - Sentiment analysis using Python's NLTK to determine positive sentiment
-- # of adjectives, # of proper nouns
+- \# of adjectives, \# of proper nouns
 
 # Text Analysis
 
-![Text analysis on length, # of words, # of punctuation, & # of exclamations.](plots/1.png)
+![Text analysis on length, words, punctuation, & exclamations.](plots/1.png)
 
 # Text Analysis
 
-![Text analysis on % capitalization, positive sentiment, # of adjectives, & # of proper nouns.](plots/2.png)
+![Text analysis on capitals, sentiment, adjectives, & proper nouns.](plots/2.png)
 
 # Expensive & Popular Words
 
