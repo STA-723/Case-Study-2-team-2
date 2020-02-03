@@ -1,0 +1,9 @@
+name: applied-ml
+dependencies:
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - scikit-learn
+  - tensorflow
+  - nltk
