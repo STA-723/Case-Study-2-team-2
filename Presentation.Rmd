@@ -132,6 +132,7 @@ ggplot() +
   )  
 ```
 
+
 # Analysis
 
 - Drop Zero Review/Zero Days Available
@@ -141,6 +142,26 @@ ggplot() +
   - $(\text{minimum nights})/(\text{availability 365}) \approx \text{number of possible bookings}$
   - Serves as a "corrected" version of reviews per month.
 
+# Text Analysis
+
+- Analyzed various text features for listing names
+- Length (in characters), # of words, % capitalization
+- # of punctuation, # of exclamations
+- Sentiment analysis using Python's NLTK to determine positive sentiment
+- # of adjectives, # of proper nouns
+
+# Text Analysis
+
+![Text analysis on length, # of words, # of punctuation, & # of exclamations.](plots/1.png)
+
+# Text Analysis
+
+![Text analysis on % capitalization, positive sentiment, # of adjectives, & # of proper nouns.](plots/2.png)
+
+# Expensive & Popular Words
+
+- Expensive: fee, beekman, wyndham, service, tower, spectacular, triplex
+- Popular: convenience, long, easy, more, outdoor, jewel
 
 # CAR Model
 
