@@ -5,7 +5,7 @@ output:
   beamer_presentation
 ---
 
-```{r,echo=FALSE,message=FALSE,warning=FALSE}
+```{r,echo=FALSE,message=FALSE,warning=FALSE,}
 library(tidyverse)
 library(sf)
 library(rnaturalearth)
@@ -13,6 +13,12 @@ library(rnaturalearthdata)
 library(rgeos)
 library(gridExtra)
 library(ggridges)
+library(broom)
+library(sp)
+library(ggmap)
+library(rgdal)
+r <- rgdal::readOGR("community.geojson",verbose = F)
+nyc_neighborhoods_df <- tidy(r)
 
 data <- read_csv("AB_NYC_2019.csv")
 data <- data %>% filter(number_of_reviews > 0, availability_365 > 0,price>0)
@@ -39,7 +45,6 @@ data %>% filter(price < 600) %>%
 
 # Distribution of Price
 ```{r,echo=FALSE}
-world <- ne_countries(scale = "medium", returnclass = "sf")
 sites <- data %>% filter(price< 1000) %>% select(latitude,longitude,price)
 names <- c("Brooklyn", "Manhattan", "Queens", "Staten Island","Bronx")
 lat <- c(40.673611,40.779746,40.7282,40.5795,40.8448)
@@ -50,36 +55,14 @@ latitude.min <- min(sites$latitude); latitude.max <-  max(sites$latitude)
 ```
 
 
-```{r,echo=FALSE,fig.align='center',fig.height=3.25,fig.width=5.25,warning=FALSE,fig.cap="Distribution of Price"}
-sites <- data %>% filter(price < 600, reviews_per_stay > 0)  %>% select(latitude,longitude,price)
-ggplot(data = world) +
-  geom_sf() +
-  geom_point(data = sites, aes(x = longitude, y = latitude,col=price), size = 0.0005, shape = 20,show.legend = FALSE) +
-  geom_text(aes(x=lon,y=lat,label=names),data=points) + xlim(c(longitude.min,longitude.max))  +
+```{r,echo=FALSE,fig.align='center',fig.height=3,fig.width=4,warning=FALSE,fig.cap="Distribution of Price"}
+ggplot() + 
+  geom_polygon(data=nyc_neighborhoods_df, aes(x=long, y=lat, group=group)) +
+  geom_point(data = sites, aes(x = longitude, y = latitude,col=price), size = 0.05,   shape = 20,show.legend = FALSE) +
+  geom_text(aes(x=lon,y=lat,label=names),data=points)+ xlim(c(longitude.min,longitude.max))  +
   ylim(c(latitude.min, latitude.max)) + 
-  guides(col= FALSE)  +
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank(),
-        )
-```
-
-
-
-# Distribution of Room Type
-
-```{r,echo=FALSE,fig.align='center',fig.height=3.25,fig.width=4.75,fig.cap="Distribution of Room Type Weighted by Price"}
-sites <- data %>% filter(price < 600)  %>% select(latitude,longitude,room_type,price)
-ggplot(data = world) +
-  geom_sf() +
-  geom_point(data = sites, aes(x = longitude, y = latitude,col=room_type,alpha=price), size = 0.001, shape = 20) +
-  geom_text(aes(x=lon,y=lat,label=names),data=points) + 
-  xlim(c(longitude.min,longitude.max)) + ylim(c(latitude.min, latitude.max)) +
   guides(alpha= FALSE) +
-  scale_color_discrete(name="Room Type") +
+  scale_color_continuous(name="Room Type") +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
@@ -89,7 +72,31 @@ ggplot(data = world) +
         legend.text = element_text(size=4),
         legend.title = element_text(size=4),
         legend.background = element_rect(size=4)
-        )
+  )  
+```
+
+
+
+# Distribution of Room Type
+
+```{r,echo=FALSE,fig.align='center',fig.height=3,fig.width=4,fig.cap="Distribution of Room Type Weighted by Price"}
+sites <- data %>% filter(price < 600)  %>% select(latitude,longitude,room_type,price)
+ggplot() + 
+  geom_polygon(data=nyc_neighborhoods_df, aes(x=long, y=lat, group=group)) +
+  geom_point(data = sites, aes(x = longitude, y = latitude,col=room_type,alpha=price), size = 0.05,   shape = 20,show.legend = FALSE) +
+  geom_text(aes(x=lon,y=lat,label=names),data=points)+ xlim(c(longitude.min,longitude.max))  +
+  ylim(c(latitude.min, latitude.max)) + 
+  guides(alpha= FALSE) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        legend.text = element_text(size=4),
+        legend.title = element_text(size=4),
+        legend.background = element_rect(size=4)
+  ) 
                       
 ```
 
@@ -105,15 +112,14 @@ data %>% filter(reviews_per_stay < 0.5) %>%
 
 # Distribution of Reviews per Stay
 
-```{r,echo=FALSE,fig.align='center',fig.height=3.25,fig.width=5.25,warning=FALSE,fig.cap="Distribution of Price Weighted by Reviews per Stay"}
+```{r,echo=FALSE,fig.align='center',fig.height=3,fig.width=4,warning=FALSE,fig.cap="Distribution of Price Weighted by Reviews per Stay"}
 sites <- data  %>% filter(reviews_per_stay > 0, price < 600) %>% select(latitude,longitude,reviews_per_stay,price)
-ggplot(data = world) +
-  geom_sf() +
-  geom_point(data = sites, aes(x = longitude, y = latitude,col=price,alpha=reviews_per_stay), size = 0.0005, shape = 20,show.legend = FALSE) +
+ggplot() + 
+  geom_polygon(data=nyc_neighborhoods_df, aes(x=long, y=lat, group=group)) +
+  geom_point(data = sites, aes(x = longitude, y = latitude,col=price,alpha=reviews_per_stay), size = 0.05,   shape = 20,show.legend = FALSE) +
   geom_text(aes(x=lon,y=lat,label=names),data=points)+ xlim(c(longitude.min,longitude.max))  +
   ylim(c(latitude.min, latitude.max)) + 
   guides(alpha= FALSE) +
-  scale_color_continuous(name="Room Type") +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank(),
@@ -123,7 +129,7 @@ ggplot(data = world) +
         legend.text = element_text(size=4),
         legend.title = element_text(size=4),
         legend.background = element_rect(size=4)
-        )
+  )  
 ```
 
 # Analysis
