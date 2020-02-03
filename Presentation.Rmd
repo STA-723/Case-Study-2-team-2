@@ -205,6 +205,43 @@ $$
 |another text feature | some number  | lb |  ub |
 |one more text feature | some number | lb | ub |
 
+# Listing Type Hetergeneity Across Neighborhoods/Boroughs
+
+```{r, echo = F}
+
+use.saved = T
+
+if (use.saved == T) {
+  tab = readRDS("Hetergeneity.rds")
+} else {
+  dat2 = read_csv("AB_NYC_2019.csv")
+  pval = round(chisq.test(table(dat2$neighbourhood, dat2$room_type))$p.value,4)
+  pval.fisher = round(fisher.test(table(dat2$neighbourhood_group, dat2$room_type), simulate.p.value = T, B = 1000000)$p.value,4)
+  het.tab = data.frame(Test = c("Overall.Nbhd"), ChiSq.P.Val = pval, Fisher.P.Val = pval.fisher)
+
+  boroughs = unique(dat2$neighbourhood_group)
+  
+  for (bor in boroughs) {
+    temp.dat = dat2 %>% filter(neighbourhood_group == bor)
+    pval = round(chisq.test(table(temp.dat$neighbourhood, temp.dat$room_type))$p.value, 3)
+    pval.fisher = round(fisher.test(table(temp.dat$neighbourhood, temp.dat$room_type), simulate.p.value = T, B = 1000000)$p.value,4)
+    het.tab = rbind(het.tab,data.frame(Test = paste0(bor,".Nbhd"), ChiSq.P.Val = pval, Fisher.P.Val = pval.fisher))
+  }
+  
+  pval = round(chisq.test(table(dat2$neighbourhood_group, dat2$room_type))$p.value,4)
+  pval.fisher = round(fisher.test(table(dat2$neighbourhood_group, dat2$room_type), simulate.p.value = T, B = 1000000)$p.value, 4)
+  het.tab = rbind(het.tab,data.frame(Test = "Borough", ChiSq.P.Val = pval, Fisher.P.Val = pval.fisher))
+  tab = het.tab
+}
+
+knitr::kable(tab)
+
+
+```
+
+- Low cell count renders Chi-Square inexact
+- Fisher Exact Test 
+
 
 # Conclusion
 
