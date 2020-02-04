@@ -1,0 +1,158 @@
+---
+title: "NYC Airbnb Data Analysis"
+author: 
+- name: Shrey Gupta, Joseph Lawson and Joseph Mathews
+date: 'February 04, 2020'
+abstract: "We analyze New York City Airbnb data from 2019. In Particular, we attempt to identify factors that significantly contribute to a listing's popularity and price. An exploratory data anlysis is done with plots and figures given in the appendix. YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE   "
+output: 
+  pdf_document:
+    keep_tex: true
+    fig_caption: true
+    latex_engine: pdflatex
+    template: svm-latex-ms.tex
+    citation_package: natbib
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{hyperref}
+linestretch: 1
+link-citations: yes
+linkcolor: blue
+fontfamily: mathpazo
+fontsize: 10pt
+bibliography: biblio.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+## Exploratory Data Analysis
+
+    - Data Cleaning
+
+See the appendix for variable names and descriptions. The Airbnb dataset contain a total 48,895 observations. We were primarily interested in listings comparable to a standard hotel or condominium rental. Therefore, we removed all observations in which _minimum_nights_ was greater than thirty and _price_ greater than six hundred dollars. The _reviews_per_month_ variable contains 10,052 _NA_ values, which presumably are due to an observation of zero _number_of_reviews_. In such cases, we are not guaranteed that the listing has been booked previously. Therefore, we decided to remove these observations. In addition, there were 17,533 observations which had zero days available. We are not told why these observations had zero days available, and it is possible that these listings are no longer on the market. In such a cases, the corresponding price could be unreliable. Therefore, we removed these observations as well. After filtering the data, we were left with 23,308 observations. 
+
+    - Transformations
+
+We took a logarithmic transformation of _price_ to make its distribution approximately Gaussian. See Figure 1 in the appendix for kernel density estimates of the logarithmic price for each borough. Aside from Staten Island, the density estimates for each borough appear fairly symmetric. We defined our own _reviews_per_available_stay_ popularity metric, which is a simple transformation of _reviews_per_month_:
+$$
+\text{reviews_per_available_stay} = \frac{\text{reviews_per_month}}{\text{availability_365} / \text{minimum_nights}} * 12
+$$
+See Figure 2 in the appendix for kernel density estimates of _reviews_per_available_stay_ for each borough. The density estimates appear approximately Gaussian. However, we note that there were a few very large observations in each distribution.  
+
+    - Geographic Distribution of Price, Popularity, and Listing Type
+
+  In addition to price and popularity, we were also interested in the distribution of listing types across neighborhoods and boroughs. A geographic distribution of listing types is given in Figure 4 in the appendix. As expected, we see that most apartment/full home listings are located in the lower Manhattan areas and downtown areas of Brooklyn. Most private room listings are located in Queens, the Bronx, and the Eastern area of Brooklyn, which tended to have "less urban" neighborhoods. Notice that in Figure 3, higher listing prices are primarily located in lower Manhattan and the downtown areas of Brooklyn as well. With this in mind, there appears to be a fairly strong association between listing type and location. 
+  In Figure 5, we give the same price distribution as that in Figure 3, except now the points are weighted by our _reviews_per_available_stay_ variable. By weighting the observations, we can see
+clusterings of high _reviews_per_available_stay_ values, possibly corresponding to different neighborhoods. Also, notice that observations with high _reviews_per_available_stay_ values tended to not have the highest price possible, but rather remained around the three hundred dollar or less range.  
+
+
+
+
+
+
+
+## Text Analysis
+
+## Model
+
+## Conclusion
+
+## Appendix
+
+|Variable Name| Description|
+|-------------|------------|
+|id|listing ID|
+|name|name of the listing|
+|host_id|host ID|
+|host_name|name of the host|
+|neighbourhood_group|name of the borough (Manhattan, Brooklyn, etc.)|
+|neighbourhood|name of the area/neighborhood|
+|latitude|latitude coordinates|
+|longitude|longitude coordinates|
+|room_type|listing space type|
+|price|price in dollars|
+|minimum_nights|amount of nights minimum (that a guest can stay there)|
+|number_of_reviews|number of reviews|
+|last_review|latest review|
+|reviews_per_month|number of reviews per month|
+|calculated_host_listings_count|amount of listing per host|
+|availability_365|number of days when listing is available for booking|
+
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+library(tidyverse)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rgeos)
+library(gridExtra)
+library(ggridges)
+library(broom)
+library(sp)
+library(kableExtra)
+library(ggmap)
+library(rgdal)
+r <- rgdal::readOGR("community.geojson",verbose = F)
+nyc_neighborhoods_df <- tidy(r)
+
+data <- read_csv("AB_NYC_2019.csv")
+data <- data %>% filter(number_of_reviews > 0, availability_365 > 0,price>0 & price < 600, minimum_nights < 30)
+data <- data %>% mutate(reviews_per_stay = (reviews_per_month * minimum_nights )/availability_365)
+```
+
+
+```{r logprice,echo=FALSE,warning=FALSE,message=FALSE,fig.height=3.5,fig.width=7.5,fig.cap="\\label{fig:logprice}Logarithm of Price Density Estimates by Borough"}
+data %>% filter(price < 600) %>%
+  ggplot(aes(x=log(price),y=neighbourhood_group)) + geom_density_ridges() + ylab(" ") + xlab("")
+```
+
+```{r,echo=FALSE,fig.height=3.5,fig.width=7.5,warning=FALSE,message=FALSE,fig.cap="Log of Reviews Available Per Stay"}
+data %>% filter(reviews_per_stay < 0.5) %>%
+  ggplot(aes(x=log(reviews_per_stay),y=neighbourhood_group)) + geom_density_ridges() + ylab(" ") + xlab("")
+```
+
+```{r,echo=FALSE}
+sites <- data %>% filter(price< 600) %>% select(latitude,longitude,price)
+names <- c("Brooklyn", "Manhattan", "Queens", "Staten Island","Bronx")
+lat <- c(40.673611,40.779746,40.7282,40.5795,40.8448)
+lon <- c(-73.944313,-73.970658,-73.7949,-74.1502,-73.8648)
+points <- tibble(names,lat,lon)
+longitude.min <- min(sites$longitude); longitude.max <- max(sites$longitude)
+latitude.min <- min(sites$latitude); latitude.max <-  max(sites$latitude)
+```
+
+
+```{r,echo=FALSE,fig.height=3.5,fig.width=7.5,warning=FALSE,fig.cap="Geographic Distribution of Price"}
+ggplot() + 
+  geom_polygon(data=nyc_neighborhoods_df, aes(x=long, y=lat, group=group)) +
+  geom_point(data = sites, aes(x = longitude, y = latitude,col=price), size = 0.05,   shape = 20,show.legend = TRUE) +
+  geom_text(aes(x=lon,y=lat,label=names),data=points)+ xlim(c(longitude.min,longitude.max))  +
+  ylim(c(latitude.min, latitude.max)) + 
+  xlab("Longitude") + ylab("Latitude") + scale_color_gradient(low = "blue", high = "red")
+```
+
+```{r,echo=FALSE,fig.height=3.5,fig.width=7.5,fig.cap="Distribution of Room Type Weighted by Price"}
+sites <- data %>% filter(price < 600)  %>% select(latitude,longitude,room_type,price)
+ggplot() + 
+  geom_polygon(data=nyc_neighborhoods_df, aes(x=long, y=lat, group=group)) +
+  geom_point(data = sites, aes(x = longitude, y = latitude,col=room_type,alpha=price), size = 0.05,   shape = 20) +
+  geom_text(aes(x=lon,y=lat,label=names),data=points)+ xlim(c(longitude.min,longitude.max))  +
+  ylim(c(latitude.min, latitude.max)) + 
+  guides(alpha= FALSE) +
+  xlab("Longitude") + ylab("Latitude") +
+  scale_color_discrete(name="Room Type")
+```
+
+```{r,echo=FALSE,fig.height=3.5,fig.width=7.5,fig.cap="Distribution of Price Weighted by Reviews per Available Stay"}
+sites <- data  %>% filter(reviews_per_stay > 0, price < 600) %>% select(latitude,longitude,reviews_per_stay,price)
+ggplot() + 
+  geom_polygon(data=nyc_neighborhoods_df, aes(x=long, y=lat, group=group)) +
+  geom_point(data = sites, aes(x = longitude, y = latitude,col=price,alpha=reviews_per_stay), size = 0.0005,   shape = 20) +
+  geom_text(aes(x=lon,y=lat,label=names),data=points)+ xlim(c(longitude.min,longitude.max))  +
+  ylim(c(latitude.min, latitude.max)) +
+  xlab("Longitude") + ylab("Latitude") + scale_color_gradient(low = "blue", high = "red")
+```
+
