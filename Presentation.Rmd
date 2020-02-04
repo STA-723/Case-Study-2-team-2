@@ -191,6 +191,15 @@ $$
 
 (See (Gelfand, Vounatsou 2003.) for further details)
 
+# Adjacency Matrix
+
+- Define closeness as mean pairwise distance between listings in pairs of neighborhoods
+- Establish threshold (.05) for adjacency, and require same Borough
+- Ends up similar to taking distance between mean coordinates
+- Considered something like Earth Mover's Distance, but was computationally excessive
+- More representative of geographic "closeness" than neighborhood boundaries
+
+
 # Price Model Output
 
 ```{r, echo=FALSE, out.width = '60%',fig.pos="c"}
@@ -277,3 +286,4 @@ knitr::kable(tab)
     - **entire apartment is available for rent conveniently located in the Tribeca neighborhood of Manhattan island...please contact for details...pricing subject to negotiation"**
 - Replace location with "East Harlem" to maximize popularity.
 - Replace location with "Financial District" to balance both.
+- Posterior distribution of CAR parameter $\alpha$ suggests adjusting for spatial dependency is warranted.
