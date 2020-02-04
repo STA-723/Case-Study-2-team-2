@@ -15,6 +15,7 @@ library(gridExtra)
 library(ggridges)
 library(broom)
 library(sp)
+library(kableExtra)
 library(ggmap)
 library(rgdal)
 r <- rgdal::readOGR("community.geojson",verbose = F)
@@ -103,7 +104,7 @@ ggplot() +
 
 # Distribution of Reviews per Stay 
 
-```{r,echo=FALSE,fig.align='left',fig.height=3,fig.width=4,warning=FALSE,message=FALSE,fig.cap="Log of Reviews Per Stay"}
+```{r,echo=FALSE,fig.align='left',fig.height=3,fig.width=4,warning=FALSE,message=FALSE,fig.cap="Log of Reviews Available Per Stay"}
 data %>% filter(reviews_per_stay < 0.5) %>%
   ggplot(aes(x=log(reviews_per_stay),y=neighbourhood_group)) + geom_density_ridges() + ylab(" ") + xlab("")
 ```
@@ -112,7 +113,7 @@ data %>% filter(reviews_per_stay < 0.5) %>%
 
 # Distribution of Reviews per Stay
 
-```{r,echo=FALSE,fig.align='center',fig.height=3,fig.width=4,warning=FALSE,fig.cap="Distribution of Price Weighted by Reviews per Stay"}
+```{r,echo=FALSE,fig.align='center',fig.height=3,fig.width=4,warning=FALSE,fig.cap="Distribution of Price Weighted by Reviews per Available Stay"}
 sites <- data  %>% filter(reviews_per_stay > 0, price < 600) %>% select(latitude,longitude,reviews_per_stay,price)
 ggplot() + 
   geom_polygon(data=nyc_neighborhoods_df, aes(x=long, y=lat, group=group)) +
@@ -132,36 +133,40 @@ ggplot() +
   )  
 ```
 
-
-# Analysis
-
-- Drop Zero Review/Zero Days Available
-- Cap Price at 600/Cap Minimum Stay at 30
-- Removed all observations in which $\text{number of reviews } = 0$, $\text{availability 365 } = 0$, or $\text{price} = 0$. . 
-- Defined a popularity metric as: $\text{reviews per stay = }\frac{(\text{reviews per month})}{(\text{minimum nights})/(\text{availability 365})}$
-  - $(\text{minimum nights})/(\text{availability 365}) \approx \text{number of possible bookings}$
-  - Serves as a "corrected" version of reviews per month.
-
 # Text Analysis
 
 - Analyzed various text features for listing names
 - Length (in characters), # of words, % capitalization
-- # of punctuation, # of exclamations
+- Number of punctuation, number of exclamations
 - Sentiment analysis using Python's NLTK to determine positive sentiment
-- # of adjectives, # of proper nouns
+- Number of adjectives, number of proper nouns
 
 # Text Analysis
 
-![Text analysis on length, # of words, # of punctuation, & # of exclamations.](plots/1.png)
+```{r, echo=FALSE, out.width = '85%',fig.pos="c"}
+knitr::include_graphics("plots/1.png")
+```
 
 # Text Analysis
 
-![Text analysis on % capitalization, positive sentiment, # of adjectives, & # of proper nouns.](plots/2.png)
+```{r, echo=FALSE, out.width = '85%',fig.pos="c"}
+knitr::include_graphics("plots/2.png")
+```
+
 
 # Expensive & Popular Words
 
 - Expensive: fee, beekman, wyndham, service, tower, spectacular, triplex
 - Popular: convenience, long, easy, more, outdoor, jewel
+
+
+# Analysis
+
+- Drop Zero Review/Zero Days Available
+- Cap Price at 600/Cap Minimum Stay at 30
+- Defined a popularity metric as: $\text{reviews per stay = }\frac{(\text{reviews per month})}{(\text{availability 365})/(\text{minimum nights})}$
+  - $(\text{availability 365})/(\text{minimum nights}) \approx \text{number of possible bookings}$
+  - Serves as a "corrected" version of reviews per month.
 
 # CAR Model
 
@@ -186,45 +191,46 @@ $$
 
 (See (Gelfand, Vounatsou 2003.) for further details)
 
+# Price Model Output
+
+```{r, echo=FALSE, out.width = '60%',fig.pos="c"}
+knitr::include_graphics("NeighborhoodPrice.png") 
+```
+
+# Price Model Output
+
+```{r, echo=FALSE, out.width = '60%',fig.pos="c"}
+knitr::include_graphics("PriceBorough.png")
+```
+
+# Price Model Output
+
+```{r,echo=FALSE}
+pricefixedeffect <- readRDS("PriceFixedEffect.rds")
+kable(pricefixedeffect,caption="Percentage Change in Price per Unit of Variable") %>% kable_styling(latex_options="scale_down")
+```
+
+# Popularity Model Output
+
+```{r, echo=FALSE, out.width = '60%',fig.pos="c"}
+knitr::include_graphics("PopularityNeighborhood.png")
+```
 
 
 
+# Popularity Model Output
 
+```{r,echo=FALSE, out.width = '60%',fig.pos="c"}
+knitr::include_graphics("PopularityBorough.png")
+```
 
-# Results Price Model
+# Popularity Model Output
 
-|Coefficient|Posterior Mean|Lower Bound|Upper Bound|
-|-----------|--------------|-----------|-----------|
-|alpha      | some number  | lb |  ub |
-|Manhattan  | some number  | lb |  ub | 
-|Queens     | some number  | lb |  ub | 
-|Bronx      | some number  | lb |  ub | 
-|Staten Island  | some number  | lb |  ub | 
-|Brooklyn | some number  | lb |  ub | 
-|Apt | some number  | lb |  ub  | 
-|Full | some number  | lb |  ub |
-|Proper Noun| some number  | lb |  ub |
-|Some other text | some number  | lb |  ub |
-|another text feature | some number  | lb |  ub |
-|one more text feature | some number | lb | ub |
+```{r,echo=FALSE,out.width='60%'}
 
-
-# Results Popularity Model
-
-|Coefficient|Posterior Mean|Lower Bound|Upper Bound|
-|-----------|--------------|-----------|-----------|
-|alpha      | some number  | lb |  ub |
-|Manhattan  | some number  | lb |  ub | 
-|Queens     | some number  | lb |  ub | 
-|Bronx      | some number  | lb |  ub | 
-|Staten Island  | some number  | lb |  ub | 
-|Brooklyn | some number  | lb |  ub | 
-|Apt | some number  | lb |  ub  | 
-|Full | some number  | lb |  ub |
-|Proper Noun| some number  | lb |  ub |
-|Some other text | some number  | lb |  ub |
-|another text feature | some number  | lb |  ub |
-|one more text feature | some number | lb | ub |
+popfixedeffect <- readRDS("PopularityFixedEffect.rds")
+kable(popfixedeffect,caption="Percentage Change in Popularity per Unit of Variable") %>% kable_styling(latex_options="scale_down")
+```
 
 # Listing Type Hetergeneity Across Neighborhoods/Boroughs
 
@@ -261,10 +267,13 @@ knitr::kable(tab)
 ```
 
 - Low cell count renders Chi-Square inexact
-- Fisher Exact Test 
+- Fisher Exact test as alternative
+- Both indicate strong heterogeneity, as suggested by EDA
+- Staten Island a bit less-so
 
 
 # Conclusion
-
-fsgd
-
+- Based on our results, an example of an expensive listing is:
+    - **entire apartment is available for rent conveniently located in the Tribeca neighborhood of Manhattan island...please contact for details...pricing subject to negotiation"**
+- Replace location with "East Harlem" to maximize popularity.
+- Replace location with "Financial District" to balance both.
