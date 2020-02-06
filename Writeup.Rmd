@@ -180,3 +180,24 @@ ggplot() +
   xlab("Longitude") + ylab("Latitude") + scale_color_gradient(low = "blue", high = "red")
 ```
 
+
+
+```{r,echo=FALSE,fig.height=2.75,fig.width=7.5,fig.cap="Price Model Output Neighborhoods"}
+knitr::include_graphics("NeighborhoodPrice.png")
+```
+
+
+```{r,echo=FALSE,fig.height=2.75,fig.width=7.5,fig.cap="Price Model Output Boroughs"}
+knitr::include_graphics("PriceBorough.png")
+```
+
+
+```{r,echo=FALSE,fig.height=2.75,fig.width=7.5,fig.cap="Price Model Fixed Effect Sizes"}
+pricefixedeffect <- readRDS("PriceFixedEffect.rds")
+kable(pricefixedeffect,caption="Percentage Change in Price per Unit of Variable") %>% kable_styling(latex_options="scale_down")
+```
+
+
+```{r, echo=FALSE,fig.height=2.75,fig.width=7.5,fig.cap="Popularity Model Output Neighborhoods"}
+knitr::include_graphics("PopularityNeighborhood.png")
+```
