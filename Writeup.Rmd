@@ -3,7 +3,6 @@ title: "NYC Airbnb Data Analysis"
 author: 
 - name: Shrey Gupta, Joseph Lawson and Joseph Mathews
 date: 'February 04, 2020'
-abstract: "We analyze New York City Airbnb data from 2019. In Particular, we attempt to identify factors that significantly contribute to a listing's popularity and price. An exploratory data anlysis is done and various text analyses were performed on host and listing names to incorporate features such as sentiment, number of capital letters, and word length into our model. We opted for a hierchical random intercept model with neighborhoods effects nested within borough effects, with a variety of fixed effects, and with a CAR structure imposed at the neighborhood level. Model results are given in the appendix."
 output: 
   pdf_document:
     keep_tex: true
@@ -26,9 +25,9 @@ bibliography: biblio.bib
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Introduction
+## Introduction/Abstract
 
-We analyzed data from Airbnb, a platform that allows hosts to rent out their homes to short- and long-term guests. 48,895 listings from 2019 in New York City, NY (NYC) were analyzed, with features including (1) information about the host, including host ID, name, and number of listings the host owns; (2) listing name and ID; (3) information about the location of the listing, including the borough and neighborhood in NYC as well as longitude and latitude; (4) room type; (5) minimum nights required to stay; (6) price; (7) information regarding the reviews left by guests, including number of reviews, date of last review, and average reviews per month; and (8) availability of the listing. Through this analysis, we seek to understand (1) influential factors on the price and popularity of listings, (2) if there exists heterogeneity among buroughs and/or neighborhoods (and, if so, which are the most expensive and popular), (3) whether room type availability varies across neighborhoods, and (4) how to name and where to locate a popular and expensive listing in NYC.
+We analyzed 48,895 AirBnB listings from New York City, New York. In particular, we attempted to identify factors that significantly contribute to a listing's popularity and price. Moreover, we explored heterogeneity among boroughs and neighborhoods with regards to room type, price, and popularity. Finally, using our results we provide examples of how to optimize popularity and price of a listing with respect to name and location. An exploratory data anlysis is done and various text analyses were performed on host and listing names to incorporate features such as sentiment, number of capital letters, and word length into our model. We use a hierchical random intercept model with neighborhood effects nested within borough effects, numerous fixed effects, and a CAR structure imposed at the neighborhood level. Model results are given in the appendix.
 
 ## Data Cleaning
 
@@ -90,10 +89,11 @@ In order to investigate heterogeneity of room type across neighborhoods, we init
 
   To conclude, we set out to determine what geographic, listing, and textual features serve as indicators of relative pricing and popularity in a selection of AirBnB listings in New York, New York. In order to focus our analysis, we performed some data culling, and to inform our analysis, we explored a variety of data visualizations, including geographic ones to explore spatial distribution of parameters of interest. We also performed a variety of text analyses to suggest certain patters, such as sentiment, capital letters, word length, etc, which might inform us regarding listing price and popularity. We opted for a hierchical random intercept model with neighborhoods effects nested within borough effects, with a variety of fixed effects, and with a CAR structure imposed at the neighborhood level. 
 
-  Our findings included strong benefits to whole room/apartment listings for both price and popularity (as we defined it), strong heterogeneity in pricing and popularity across neighborhoods. Tribeca was the most expensive neighborhood, East Harlem the most popular, with the Financial District in our judgement maximizing the combination of price and popularity. East Harlem is a bit surprising to us, and further investigation is warranted into whether our metric is the source of some odd effects. We identified a number of textual features of importance in price and popularity, including the percentage of capital letters and average word length, and a surprising negative association between text sentiment and price. We also found strong evidence of heterogeneity in listing type across both neighborhoods and boroughs. Finally, we present our formulations of what are good apartment advertisements under our results: 
+  Our findings included strong benefits to whole room/apartment listings for both price and popularity (as we defined it), strong heterogeneity in pricing and popularity across neighborhoods. Tribeca was the most expensive neighborhood, East Harlem the most popular, with the Financial District in our judgement maximizing the combination of price and popularity. East Harlem is a bit surprising to us, and further investigation is warranted into whether our metric is the source of some odd effects. We identified a number of textual features of importance in price and popularity, including the percentage of capital letters and average word length, and a surprising negative association between text sentiment and price. We also found strong evidence of heterogeneity in listing type across both neighborhoods and boroughs. Based on our results, an example of a listing name and location to maximize price is given by: 
 \begin{center}
   "entire apartment is available for rent conveniently located in the Tribeca neighborhood of Manhattan island. . . please contact for details. . . pricing subject to negotiation."
 \end{center}
+In order to maximize popularity, replace the location with "East Harlem". For a balance of both, replace the location with "Financial District". Note that both locations are also in Manhattan.
 
 \newpage 
 
@@ -206,7 +206,7 @@ knitr::include_graphics("PriceBorough.png")
 
 ```{r,echo=FALSE,fig.height=2.75,fig.width=7.5,fig.cap="Price Model Fixed Effect Sizes"}
 pricefixedeffect <- readRDS("PriceFixedEffect.rds")
-kable(pricefixedeffect,caption="Percentage Change in Price per Unit of Variable") %>% kable_styling(latex_options="scale_down")
+kable(pricefixedeffect,caption="Percentage Change in Price per Unit of Variable (Fixed Effects)") %>% kable_styling(latex_options="scale_down")
 ```
 
 
@@ -214,6 +214,15 @@ kable(pricefixedeffect,caption="Percentage Change in Price per Unit of Variable"
 knitr::include_graphics("PopularityNeighborhood.png")
 ```
 
+```{r,echo=FALSE,fig.height=2.75,fig.width=7.5,fig.cap="Popularity Model Output Boroughs"}
+knitr::include_graphics("PopularityBorough.png")
+```
+
+```{r,echo=FALSE,fig.height=2.75,fig.width=7.5,fig.cap="Popularity Model Fixed Effect Sizes"}
+
+popfixedeffect <- readRDS("PopularityFixedEffect.rds")
+kable(popfixedeffect,caption="Percentage Change in Popularity per Unit of Variable (Fixed Effects)") %>% kable_styling(latex_options="scale_down")
+```
 
 ```{r,echo=FALSE, out.width = '80%',fig.cap="Text Analysis Results"}
 knitr::include_graphics("plots/1.png")
