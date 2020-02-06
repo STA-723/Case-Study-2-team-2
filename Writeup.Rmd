@@ -3,7 +3,7 @@ title: "NYC Airbnb Data Analysis"
 author: 
 - name: Shrey Gupta, Joseph Lawson and Joseph Mathews
 date: 'February 04, 2020'
-abstract: "We analyze New York City Airbnb data from 2019. In Particular, we attempt to identify factors that significantly contribute to a listing's popularity and price. An exploratory data anlysis is done with plots and figures given in the appendix. YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE   "
+abstract: "We analyze New York City Airbnb data from 2019. In particular, we attempt to identify factors that significantly contribute to a listing's popularity and price. An exploratory data anlysis is done with plots and figures given in the appendix. YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE.YOU GUYS CAN WRITE A LITTLE BLURB ON YOUR STUFF HERE   "
 output: 
   pdf_document:
     keep_tex: true
@@ -51,11 +51,9 @@ clusterings of high _reviews_per_available_stay_ values, possibly corresponding 
 
 ## Text Analysis
 
-We analyzed various text features for listing names, including: (1) length, in characters and words, (2) percentage of listing that was capitalized, (3) amount of punctuation and exclamations, (4) positive sentiment using Python's NLTK package, and (5) number of adjectives and proper nouns. 
+We analyzed various text features for listing names, including (1) length, in characters and words, (2) percentage of listing that was capitalized, (3) amount of punctuation and exclamations, (4) positive sentiment using Python's NLTK package, and (5) number of adjectives and proper nouns. 
 
-In order to better understand the relationship between each of these features on price and popularity, we sorted first on price into five quantiles and then into popularity, again into five quantile, for each price quantile, and determined the mean value for each feature in each of the 25 "buckets".
-
-We noticed several pieces of insight. In general, listings with (1) a higher average length (in characters) and (2) more words were more expensive and popular. On the other hand, listings with more capital letters (by percentage) were less expensive and popular. Furthermore, listings with (1) more positive sentiment, and (2) more adjectives were less expensive but more popular. Listings with (1) more punctuation and (2) more proper nouns were more expensive, but not clearly any more or less popular. Finally, there was no clear impact on the amount of exclamations. See appendix for more detailed plots.
+In order to better understand the relationship between each of these features on price and popularity, we sorted first on price into five quantiles and then on popularity, again into five quantiles, for each price quantile, and determined the mean value for each feature in each of the 25 "buckets". We noticed several pieces of insight. In general, listings with (1) a higher average length (in characters) and (2) more words were more expensive and popular. On the other hand, listings with more capital letters (by percentage) were less expensive and popular. Furthermore, listings with (1) more positive sentiment, and (2) more adjectives were less expensive but more popular. Listings with (1) more punctuation and (2) more proper nouns were more expensive, but not clearly any more or less popular. Finally, there was no clear impact on the amount of exclamations. See appendix for more detailed plots.
 
 We also conducted an analysis to understand the most expensive and popular words, defined by the average price and popularity of the listings that each word appeared in. The most expensive words included "fee", "beekman", "wyndham", "service", "tower", "spectacular", and "triplex". The most popular words included "convenience", "long", "easy", "more", "outdoor", and "jewel".
 
