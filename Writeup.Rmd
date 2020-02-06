@@ -28,6 +28,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
+We analyzed data from Airbnb, a platform that allows hosts to rent out their homes to short- and long-term guests. 48,895 listings from 2019 in New York City, NY (NYC) were analyzed, with features including (1) information about the host, including host ID, name, and number of listings the host owns; (2) listing name and ID; (3) information about the location of the listing, including the borough and neighborhood in NYC as well as longitude and latitude; (4) room type; (5) minimum nights required to stay; (6) price; (7) information regarding the reviews left by guests, including number of reviews, date of last review, and average reviews per month; and (8) availability of the listing. Through this analysis, we seek to understand (1) influential factors on the price and popularity of listings, (2) if there exists heterogeneity among buroughs and/or neighborhoods (and, if so, which are the most expensive and popular), (3) whether room type availability varies across neighborhoods, and (4) how to name and where to locate a popular and expensive listing in NYC.
+
 ## Data Cleaning
 
 See the appendix for variable names and descriptions. The Airbnb dataset contain a total 48,895 observations. We were primarily interested in listings comparable to a standard hotel or condominium rental. Therefore, we removed all observations in which _minimum_nights_ was greater than thirty and _price_ greater than six hundred dollars. The _reviews_per_month_ variable contains 10,052 _NA_ values, which presumably are due to an observation of zero _number_of_reviews_. In such cases, we are not guaranteed that the listing has been booked previously. Therefore, we decided to remove these observations. In addition, there were 17,533 observations which had zero days available. We are not told why these observations had zero days available, and it is possible that these listings are no longer on the market. In such a cases, the corresponding price could be unreliable. Therefore, we removed these observations as well. After filtering the data, we were left with 23,308 observations. 
@@ -48,6 +50,14 @@ clusterings of high _reviews_per_available_stay_ values, possibly corresponding 
 
 
 ## Text Analysis
+
+We analyzed various text features for listing names, including: (1) length, in characters and words, (2) percentage of listing that was capitalized, (3) amount of punctuation and exclamations, (4) positive sentiment using Python's NLTK package, and (5) number of adjectives and proper nouns. 
+
+In order to better understand the relationship between each of these features on price and popularity, we sorted first on price into five quantiles and then into popularity, again into five quantile, for each price quantile, and determined the mean value for each feature in each of the 25 "buckets".
+
+We noticed several pieces of insight. In general, listings with (1) a higher average length (in characters) and (2) more words were more expensive and popular. On the other hand, listings with more capital letters (by percentage) were less expensive and popular. Furthermore, listings with (1) more positive sentiment, and (2) more adjectives were less expensive but more popular. Listings with (1) more punctuation and (2) more proper nouns were more expensive, but not clearly any more or less popular. Finally, there was no clear impact on the amount of exclamations. See appendix for more detailed plots.
+
+We also conducted an analysis to understand the most expensive and popular words, defined by the average price and popularity of the listings that each word appeared in. The most expensive words included "fee", "beekman", "wyndham", "service", "tower", "spectacular", and "triplex". The most popular words included "convenience", "long", "easy", "more", "outdoor", and "jewel".
 
 ## Model
 
@@ -181,7 +191,6 @@ ggplot() +
 ```
 
 
-
 ```{r,echo=FALSE,fig.height=2.75,fig.width=7.5,fig.cap="Price Model Output Neighborhoods"}
 knitr::include_graphics("NeighborhoodPrice.png")
 ```
@@ -201,3 +210,14 @@ kable(pricefixedeffect,caption="Percentage Change in Price per Unit of Variable"
 ```{r, echo=FALSE,fig.height=2.75,fig.width=7.5,fig.cap="Popularity Model Output Neighborhoods"}
 knitr::include_graphics("PopularityNeighborhood.png")
 ```
+
+
+```{r, echo=FALSE, out.width = '85%',fig.pos="c"}
+knitr::include_graphics("plots/1.png")
+```
+
+```{r, echo=FALSE, out.width = '85%',fig.pos="c"}
+knitr::include_graphics("plots/2.png")
+```
+
+
