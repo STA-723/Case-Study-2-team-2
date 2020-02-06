@@ -49,7 +49,6 @@ See Figure 2 in the appendix for kernel density estimates of the log of _reviews
 
 
 ## Text Analysis
-
 We analyzed various text features for listing names, including: (1) length, in characters and words, (2) percentage of listings that are capitalized, (3) amount of punctuation and exclamations, (4) positive sentiment using Python's NLTK package, and (5) number of adjectives and proper nouns. 
 
 In order to better understand the relationship between each of these features on price and popularity, we sorted price and popularity into five quantiles and then determined the mean value for each text feature in each of the 25 "buckets".
